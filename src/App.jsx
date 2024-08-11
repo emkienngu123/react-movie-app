@@ -4,11 +4,34 @@ import viteLogo from '/vite.svg'
 import Header from './components/Header'
 import Banner from './components/Banner'
 import MovieList from './components/MovieList'
+import MovieSearch from './components/MovieSearch'
 import { data } from 'autoprefixer'
 
 function App() {
   const [movie,setMovie] = useState([])
   const [RatedMovie,setRatedMovie] = useState([])
+  const [movieSearch,setMovieSearch] = useState([])
+  const handleSearch = async (searchValue) =>{
+    setMovieSearch([])
+    try {
+      const url = `https://api.themoviedb.org/3/search/movie?query=${searchValue}&include_adult=false&language=en-US&page=1`;
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`
+        }
+      };
+
+
+      const searchMovie = await fetch(url,options);
+      const data = await searchMovie.json()
+      setMovieSearch(data.results)
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
   useEffect(() => {
     const fetchMovie = async() => {
       const options = {
@@ -34,10 +57,17 @@ function App() {
   },[])
   return (
     <div className='bg-black pb-10 text-white'>
-      <Header></Header>
+      <Header onSearch={handleSearch}></Header>
       <Banner></Banner>
-      <MovieList title={"Phim hot"} data={movie}/>
-      <MovieList title={"Phim de cu"} data={RatedMovie}/>
+      {movieSearch.length > 0 ? (
+        <MovieSearch title={"Search result"} data={movieSearch}></MovieSearch>
+      ) : (
+        <>
+          <MovieList title={"Phim hot"} data={movie} />
+          <MovieList title={"Phim de cu"} data={RatedMovie} />
+        </>
+      )}
+
     </div>
   )
 }
